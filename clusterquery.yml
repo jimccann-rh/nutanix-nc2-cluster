@@ -48,6 +48,6 @@
     msg:
       - "{{ query.json.name }}"
       - "{{ query.json.cluster_state }}"
-#      - "{{ login.json.cluster_service_ip }}"
+      - "{{ query.json.cluster_service_ip }}"
 #      - "{{ login.json.load_balancer_dns_name }}"
 

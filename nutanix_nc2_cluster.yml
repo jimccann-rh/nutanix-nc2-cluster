@@ -40,10 +40,10 @@
 
     - name: set url
       set_fact:
-#        api_url_v2: "https://{{ login.json.load_balancer_dns_name }}:9440/api/nutanix/v2.0/vms"
         api_url_v2: "https://{{ login.json.cluster_service_ip }}:9440/api/nutanix/v2.0/vms"
-#        api_url_v3: "https://{{ login.json.load_balancer_dns_name }}:9440/api/nutanix/v2.0/tasks"
         api_url_v3: "https://{{ login.json.cluster_service_ip }}:9440/api/nutanix/v2.0/tasks"
+#        api_url_v2: "https://{{ login.json.load_balancer_dns_name }}:9440/api/nutanix/v2.0/vms"
+#        api_url_v3: "https://{{ login.json.load_balancer_dns_name }}:9440/api/nutanix/v2.0/tasks"
         
 
     - name: Hibernate cluster
