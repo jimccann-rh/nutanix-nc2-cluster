@@ -34,7 +34,6 @@
 
     - name: Get cluster current state 
       include_tasks: clusterinfo.yml
-      delegate_to: localhost
 
   tasks:
 
@@ -57,7 +56,6 @@
             transition_payload: "ACPI_SHUTDOWN"
             vmstatus: "Succeeded"
           when: managevm
-          delegate_to: localhost
 
         - name: Set the cluster to hibernate
           uri:
@@ -81,7 +79,6 @@
           vars:
             clusterstate: hibernated
           when: loginpe.json.metadata.total_entities < 2
-          delegate_to: localhost
 
       when: HIBERNATECLUSTER|bool and 'running' in login.json.cluster_state
 
@@ -107,7 +104,6 @@
           include_tasks: clusterquery.yml
           vars:
             clusterstate: running
-          delegate_to: localhost
 
         - name: Start Prism Central VM
           include_tasks: vminfo.yml
@@ -116,6 +112,5 @@
             currentvmstate: "off"
             vmstatus: "Succeeded"
           when: managevm
-          delegate_to: localhost
 
       when: not HIBERNATECLUSTER|bool and 'hibernated' in login.json.cluster_state
