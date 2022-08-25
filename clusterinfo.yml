@@ -45,4 +45,4 @@
       - "{{ login.json.name }}"
       - "{{ login.json.cluster_state }}"
       - "{{ login.json.cluster_service_ip }}"
-      - "{{ login.json.load_balancer_dns_name }}"
+#      - "{{ login.json.load_balancer_dns_name }}"
