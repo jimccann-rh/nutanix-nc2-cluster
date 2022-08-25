@@ -1,0 +1,135 @@
+- name: Auths to PE and get info
+  uri:
+    url: "{{ api_url_v2 }}"
+    method: GET
+    validate_certs: false
+    body_format: json
+    status_code: 200
+    return_content: true
+    user: "{{ prism_user }}"
+    password: "{{ prism_password }}"
+    force_basic_auth: yes
+  register: loginpe
+
+- name: Show result
+  debug:
+    msg: 
+      - "{{ loginpe }}"
+      - "{{ api_url_v2 }}"
+      - "{{ api_url_v3 }}"
+  tags: never
+
+- name: Show result vms 
+  debug:
+    msg:
+      - "{{ loginpe.json }}"
+      - "{{ loginpe.json.entities }}"
+      - "{{ loginpe.json.metadata.total_entities }}"
+  tags: never
+
+- name: Gets VMS info 
+  set_fact:
+    vm_entities: "{{ loginpe.json.entities }}"
+
+- name: show specific vm info
+  debug:
+    msg: 
+     - "{{ item.name }} {{ item.uuid }}"
+#     - "{{ item.name }} {{ item.uuid }} {{ item.description }}"
+#     Does not work as PE if VM has description is null there is no description key
+  loop: "{{ vm_entities }}"
+  tags:
+    never
+
+- name: Gets VM Prisim Central from its description
+  set_fact:
+    vm_entitiesPC: "{{ loginpe.json|json_query('entities[?description == `NutanixPrismCentral`]')}}"
+#    vm_entities2: "{{ loginpe.json|json_query('entities[?name == `test2`]')}}"
+#    vm_entities2: "{{ loginpe.json|json_query('entities')}}"
+
+- name: show specific vm info
+  debug:
+    msg: 
+      - "{{ vm_entitiesPC }}"
+      - "{{ vm_entitiesPC[0].name }}"
+      - "{{ vm_entitiesPC[0].description }}"
+      - "{{ vm_entitiesPC[0].uuid }}"
+      - "{{ vm_entitiesPC[0].power_state }}"
+  tags:
+    never
+
+- name: Set VM Prism Central uuid fact
+  set_fact: 
+    pcuuid: "{{ vm_entitiesPC[0].uuid }}"
+  
+- name: show specific PC vm uuid 
+  debug:
+    msg: 
+      - "{{ pcuuid }}"
+      - "{{ api_url_v2 }}"
+  tags:
+    never
+
+- name: Set power state PE to "{{ transition_payload }}"
+  block:
+    - name: Set power state PE to "{{ transition_payload }}"
+      uri:
+        url: "{{ api_url_v2 }}/{{ pcuuid }}/set_power_state"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body: '{"transition": "{{ transition_payload }}"}'
+        return_content: true
+        user: "{{ prism_user }}" 
+        password: "{{ prism_password }}"
+        force_basic_auth: yes
+        status_code: 201, 200
+      register: setpowerstate 
+      when: vm_entitiesPC[0].power_state == currentvmstate 
+
+
+    - name: Show result of task
+      debug:
+        msg:
+          - "{{ setpowerstate }}"
+          - "{{ setpowerstate.json.task_uuid }}"
+      tags:
+        never
+
+
+    - name: Get status of task 
+      uri:
+        url: "{{ api_url_v3 }}/{{ setpowerstate.json.task_uuid }}"
+        method: GET
+        validate_certs: false
+        body_format: json
+        return_content: true
+        user: "{{ prism_user }}"
+        password: "{{ prism_password }}"
+        force_basic_auth: yes
+        status_code: 200
+      register: getpowerstate
+      when: vm_entitiesPC[0].power_state == currentvmstate 
+      until: vmstatus in getpowerstate.json.progress_status
+      retries: "{{ qretries }}"
+      delay: "{{ qdelay }}"
+      failed_when: getpowerstate.json.progress_status != vmstatus
+#      failed_when: getpowerstate.json.completed_tasks_info[0].progress_status != "Succeeded"
+
+    - name: Show result of task
+      debug:
+        msg:
+          - "{{ getpowerstate }}"
+          - "{{ getpowerstate.json }}"
+#          - "{{ getpowerstate.json.completed_tasks_info }}"
+#          - "{{ getpowerstate.json.completed_tasks_info[0].progress_status }}"
+      tags:
+        never
+  when: loginpe.json.metadata.total_entities <= 2
+
+
+- name: Other VMS exist
+  debug:
+    msg:
+      - "********* VM systems exist will not hibernate **************" 
+  when: loginpe.json.metadata.total_entities >= 2

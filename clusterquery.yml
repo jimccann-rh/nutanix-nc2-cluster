@@ -1,0 +1,53 @@
+- name: set epoch plus client_id
+  set_fact:
+    eclient_id: "{{ etime }}{{ CLIENT_ID }}"
+
+- name: openssh hashmac
+  shell: 'echo -n {{ eclient_id }} | openssl sha256 -hmac {{ CLIENT_SECRET }}'
+  register: hmac
+
+- name: Show result
+  debug:
+    msg:
+      - "{{ etime }}"
+      - "{{ eclient_id }}"
+      - "{{ hmac }}"
+      - "{{ hmac.stdout }}"
+      - "{{ hmac.stdout.split(' ')[1] }}"
+  tags: never
+
+- name: set hmac key
+  set_fact:
+    hmackey: "{{ hmac.stdout.split(' ')[1] }}"
+
+- name: Query the cluster and get info
+  uri:
+    url: "{{ api_url_v1 }}/clusters/{{ CLUSTER_ID }}"
+    method: GET
+    validate_certs: false
+    body_format: json
+    status_code: 200
+    return_content: true
+    headers:
+      "X-Frame-ClientId": "{{ CLIENT_ID }}"
+      "X-Frame-Timestamp": "{{ etime }}"
+      "X-Frame-Signature": "{{ hmackey }}"
+  register: query
+  until: clusterstate in query.json.cluster_state
+  retries: "{{ qretries }}"
+  delay: "{{ qdelay }}"
+
+- name: Show result cluster status
+  debug:
+    msg: "{{ query.json }}"
+  tags:
+    never
+
+- name: Show result cluster status
+  debug:
+    msg:
+      - "{{ query.json.name }}"
+      - "{{ query.json.cluster_state }}"
+#      - "{{ login.json.cluster_service_ip }}"
+#      - "{{ login.json.load_balancer_dns_name }}"
+
