@@ -125,7 +125,7 @@
 #          - "{{ getpowerstate.json.completed_tasks_info[0].progress_status }}"
       tags:
         never
-  when: loginpe.json.metadata.total_entities <= 2
+  when: loginpe.json.metadata.total_entities >= 2
 
 
 - name: Other VMS exist
