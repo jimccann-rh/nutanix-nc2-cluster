@@ -49,3 +49,4 @@
 
     - name: query Prism Central VM
       include_tasks: vminfocount.yml
+      when: "'running' in login.json.cluster_state"
