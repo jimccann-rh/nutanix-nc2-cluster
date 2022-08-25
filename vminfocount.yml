@@ -1,7 +1,7 @@
 - name: set url
   set_fact:
-    api_url_v2: "https://{{ query.json.cluster_service_ip }}:9440/api/nutanix/v2.0/vms"
-    api_url_v3: "https://{{ query.json.cluster_service_ip }}:9440/api/nutanix/v2.0/tasks"
+    api_url_v2: "https://{{ login.json.cluster_service_ip }}:9440/api/nutanix/v2.0/vms"
+    api_url_v3: "https://{{ login.json.cluster_service_ip }}:9440/api/nutanix/v2.0/tasks"
 
 - name: Auths to PE and get info
   uri:
