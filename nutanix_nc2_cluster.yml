@@ -32,11 +32,11 @@
       no_log: true
       delegate_to: localhost
 
-  tasks:
-
     - name: Get cluster current state
       include_tasks: clusterinfo.yml
 
+
+  tasks:
 
 #    - name: set url
 #      set_fact:
