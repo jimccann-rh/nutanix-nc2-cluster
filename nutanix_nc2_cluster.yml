@@ -32,10 +32,10 @@
       no_log: true
       delegate_to: localhost
 
-    - name: Get cluster current state 
-      include_tasks: clusterinfo.yml
-
   tasks:
+
+    - name: Get cluster current state
+      include_tasks: clusterinfo.yml
 
 
 #    - name: set url
@@ -48,6 +48,11 @@
 
     - name: Hibernate cluster
       block:
+
+        - name: Query cluster is running
+          include_tasks: clusterquery.yml
+          vars:
+            clusterstate: running
 
         - name: Shutdown Prism Central VM
           include_tasks: vminfo.yml
