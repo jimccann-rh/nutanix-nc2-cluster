@@ -67,7 +67,7 @@
             currentvmstate: "on"
             transition_payload: "ACPI_SHUTDOWN"
             vmstatus: "Succeeded"
-          when: managevm and loginpe.json.metadata.total_entities >= 2 
+          when: managevm and not loginpe.json.metadata.total_entities >= 2 
 
         - name: Set the cluster to hibernate
           uri:
