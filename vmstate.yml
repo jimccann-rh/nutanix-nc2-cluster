@@ -1,13 +1,13 @@
-- name: Gets VM Prisim Central from its description
+- name: Gets VM Prism Central from its description
   set_fact:
     vm_entitiesPC: "{{ loginpe.json|json_query('entities[?description == `NutanixPrismCentral`]')}}"
 #    vm_entities2: "{{ loginpe.json|json_query('entities[?name == `test2`]')}}"
 #    vm_entities2: "{{ loginpe.json|json_query('entities')}}"
 
-- name: show specific vm info
+- name: show specific vm info on Prism Central
   debug:
     msg: 
-      - "{{ vm_entitiesPC }}"
+#      - "{{ vm_entitiesPC }}"
       - "{{ vm_entitiesPC[0].name }}"
       - "{{ vm_entitiesPC[0].description }}"
       - "{{ vm_entitiesPC[0].uuid }}"
@@ -27,9 +27,9 @@
   tags:
     never
 
-- name: Set power state PC to "{{ transition_payload }}"
+- name: Set power state Prism Central to "{{ transition_payload }}"
   block:
-    - name: Set power state PC to "{{ transition_payload }}"
+    - name: Set power state Prism Central to "{{ transition_payload }}"
       uri:
         url: "{{ api_url_v2 }}/{{ pcuuid }}/set_power_state"
         method: POST
@@ -83,7 +83,7 @@
       tags:
         never
 
-- name: Other VMS exist
+- name: Other VMS exist in cluster?
   debug:
     msg:
       - "********* VM systems exist will not hibernate **************" 
