@@ -83,14 +83,14 @@
               "X-Frame-Signature": "{{ hmackey }}"
           register: result
 #          ignore_errors: yes
-          when: loginpe.json.metadata.total_entities < 2
+          when: not loginpe.json.metadata.total_entities >= 2
 
 
         - name: Query cluster is hibernated
           include_tasks: clusterquery.yml
           vars:
             clusterstate: hibernated
-          when: loginpe.json.metadata.total_entities < 2
+          when: not loginpe.json.metadata.total_entities >= 2
 
         - name: Removing hibernation trigger file
           file:
