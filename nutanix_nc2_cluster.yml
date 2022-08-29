@@ -85,6 +85,11 @@
             clusterstate: hibernated
           when: loginpe.json.metadata.total_entities < 2
 
+        - name: Removing hibernation trigger file
+          file:
+            path: "{{ ansible_env.HOME }}/.hibernationoff"
+            state: absent
+
       when: HIBERNATECLUSTER|bool and 'running' in login.json.cluster_state
 
 
@@ -117,5 +122,10 @@
             currentvmstate: "off"
             vmstatus: "Succeeded"
           when: managevm
+
+        - name: Creating hibernation trigger file
+          file:
+            path: "{{ ansible_env.HOME }}/.hibernationoff"
+            state: touch
 
       when: not HIBERNATECLUSTER|bool and 'hibernated' in login.json.cluster_state
