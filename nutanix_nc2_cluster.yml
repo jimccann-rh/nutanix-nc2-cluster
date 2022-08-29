@@ -35,6 +35,10 @@
     - name: Get cluster current state
       include_tasks: clusterinfo.yml
 
+    - name: Check that trigger file exits
+      stat:
+        path: "{{ ansible_env.HOME }}/.hibernationoff"
+      register: stat_result
 
   tasks:
 
