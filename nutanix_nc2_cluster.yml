@@ -58,13 +58,16 @@
           vars:
             clusterstate: running
 
-        - name: Shutdown Prism Central VM
+        - name: Get vm information from cluster
           include_tasks: vminfo.yml
+
+        - name: Shutdown Prism Central VM
+          include_tasks: vmstate.yml
           vars:
             currentvmstate: "on"
             transition_payload: "ACPI_SHUTDOWN"
             vmstatus: "Succeeded"
-          when: managevm
+          when: managevm and loginpe.json.metadata.total_entities >= 2 
 
         - name: Set the cluster to hibernate
           uri:
@@ -119,8 +122,11 @@
           vars:
             clusterstate: running
 
-        - name: Start Prism Central VM
+        - name: Get vm information from cluster
           include_tasks: vminfo.yml
+
+        - name: Start Prism Central VM
+          include_tasks: vmstate.yml
           vars:
             transition_payload: "on"
             currentvmstate: "off"
