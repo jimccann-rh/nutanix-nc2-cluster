@@ -83,8 +83,8 @@
       tags:
         never
 
-- name: Other VMS exist in cluster?
-  debug:
-    msg:
-      - "********* VM systems exist will not hibernate **************" 
-  when: loginpe.json.metadata.total_entities >= 2
+#- name: Other VMS exist in cluster?
+#  debug:
+#    msg:
+#      - "********* VM systems exist will not hibernate **************" 
+#  when: loginpe.json.metadata.total_entities >= 2

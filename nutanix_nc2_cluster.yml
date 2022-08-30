@@ -96,6 +96,13 @@
           file:
             path: "{{ ansible_env.HOME }}/.hibernationoff"
             state: absent
+          when: not loginpe.json.metadata.total_entities >= 2
+
+        - name: Other VMS exist in cluster?
+          debug:
+            msg:
+              - "********* VM systems exist will NOT HIBERNATE **************"
+          when: loginpe.json.metadata.total_entities >= 2
 
       when: HIBERNATECLUSTER|bool and 'running' in login.json.cluster_state
 
