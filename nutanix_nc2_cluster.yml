@@ -7,7 +7,7 @@
     DOMAIN: "api-gateway-prod.frame.nutanix.com"
     etime: "{{ ansible_date_time.epoch }}"
     api_url_v1: "https://{{ DOMAIN }}/v1"
-    qretries: 60
+    qretries: 120 
     qdelay: 60
     managevm: true
     update_prism_admin_str: 'dpp/data/nutanix/prism/central:username'
