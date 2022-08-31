@@ -55,7 +55,7 @@
       until: vmstatus in getpowerstate.json.progress_status
       retries: "{{ qretries }}"
       delay: "{{ qdelay }}"
-      failed_when: getpowerstate.json.progress_status != vmstatus
+      failed_when: getpowerstate.json.progress_status == "Failed"
 #      failed_when: getpowerstate.json.completed_tasks_info[0].progress_status != "Succeeded"
 
     - name: Show ansible.builtin.debug of power state task
