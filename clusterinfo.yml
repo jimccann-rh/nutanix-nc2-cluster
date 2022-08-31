@@ -20,6 +20,8 @@
       - "{{ hmac.stdout }}"
       - "{{ hmac.stdout.split(' ')[1] }}"
     verbosity: 2
+  tags: never
+
 - name: Set hmac key
   ansible.builtin.set_fact:
     hmackey: "{{ hmac.stdout.split(' ')[1] }}"
@@ -42,6 +44,7 @@
   ansible.builtin.debug:
     msg: "{{ login }}"
     verbosity: 2
+  tags: never
 
 - name: Show cluster status of "{{ cluster_id }}"
   ansible.builtin.debug:

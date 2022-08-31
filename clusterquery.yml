@@ -11,7 +11,7 @@
     executable: /bin/bash
   changed_when: false
 
-- name: Show debug configs of headers for login 
+- name: Show debug configs of headers for login
   ansible.builtin.debug:
     msg:
       - "{{ etime }}"
@@ -20,6 +20,7 @@
       - "{{ hmac.stdout }}"
       - "{{ hmac.stdout.split(' ')[1] }}"
     verbosity: 2
+  tags: never
 
 - name: Set hmac key
   ansible.builtin.set_fact:
@@ -46,6 +47,7 @@
   ansible.builtin.debug:
     msg: "{{ query.json }}"
     verbosity: 2
+  tags: never
 
 - name: Show cluster status of "{{ cluster_id }}"
   ansible.builtin.debug:
@@ -58,3 +60,4 @@
   ansible.builtin.debug:
     msg: "{{ login.json.load_balancer_dns_name }}"
     verbosity: 2
+  tags: never

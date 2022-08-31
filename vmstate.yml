@@ -31,12 +31,13 @@
       register: setpowerstate
       when: vm_entitiespc[0].power_state == currentvmstate
 
-    - name: Show ansible.builtin.debug status of task on power state
+    - name: Show debug status of task on power state
       ansible.builtin.debug:
         msg:
           - "{{ setpowerstate }}"
           - "{{ setpowerstate.json.task_uuid }}"
         verbosity: 2
+      tags: never
 
     - name: Get status of task to set power state and confirm power state
       ansible.builtin.uri:
@@ -57,7 +58,7 @@
       failed_when: getpowerstate.json.progress_status == "Failed" or getpowerstate.json.progress_status == "FAILED"
 #      failed_when: getpowerstate.json.completed_tasks_info[0].progress_status != "Succeeded"
 
-    - name: Show ansible.builtin.debug of power state task
+    - name: Show debug of power state task
       ansible.builtin.debug:
         msg:
           - "{{ getpowerstate }}"
@@ -65,3 +66,4 @@
 #          - "{{ getpowerstate.json.completed_tasks_info }}"
 #          - "{{ getpowerstate.json.completed_tasks_info[0].progress_status }}"
         verbosity: 2
+      tags: never
