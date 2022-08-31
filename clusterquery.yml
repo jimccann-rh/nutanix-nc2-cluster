@@ -19,7 +19,7 @@
       - "{{ hmac }}"
       - "{{ hmac.stdout }}"
       - "{{ hmac.stdout.split(' ')[1] }}"
-  tags: never
+    verbosity: 2
 
 - name: Set hmac key
   ansible.builtin.set_fact:
@@ -45,8 +45,7 @@
 - name: Show result of query var
   ansible.builtin.debug:
     msg: "{{ query.json }}"
-  tags:
-    never
+    verbosity: 2
 
 - name: Show cluster status of "{{ cluster_id }}"
   ansible.builtin.debug:
@@ -58,5 +57,4 @@
 - name: Show load balancer status
   ansible.builtin.debug:
     msg: "{{ login.json.load_balancer_dns_name }}"
-  tags:
-    never
+    verbosity: 2

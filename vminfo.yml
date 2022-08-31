@@ -22,7 +22,7 @@
       - "{{ loginpe }}"
       - "{{ api_url_v2 }}"
       - "{{ api_url_v3 }}"
-  tags: never
+    verbosity: 2
 
 - name: Show ansible.builtin.debug of vms status
   ansible.builtin.debug:
@@ -30,7 +30,7 @@
       - "{{ loginpe.json }}"
       - "{{ loginpe.json.entities }}"
       - "{{ loginpe.json.metadata.total_entities }}"
-  tags: never
+    verbosity: 2
 
 - name: Set VM entities
   ansible.builtin.set_fact:
@@ -42,5 +42,5 @@
       - "{{ item.name }} {{ item.uuid }}"
   #     - "{{ item.name }} {{ item.uuid }} {{ item.description }}"
   #     Does not work as PE if VM has description is null there is no description key
+    verbosity: 2
   loop: "{{ vm_entities }}"
-  tags: never

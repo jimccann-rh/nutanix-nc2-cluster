@@ -36,8 +36,7 @@
         msg:
           - "{{ setpowerstate }}"
           - "{{ setpowerstate.json.task_uuid }}"
-      tags:
-        never
+        verbosity: 2
 
     - name: Get status of task to set power state and confirm power state
       ansible.builtin.uri:
@@ -65,5 +64,4 @@
           - "{{ getpowerstate.json }}"
 #          - "{{ getpowerstate.json.completed_tasks_info }}"
 #          - "{{ getpowerstate.json.completed_tasks_info[0].progress_status }}"
-      tags:
-        never
+        verbosity: 2
