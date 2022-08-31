@@ -2,7 +2,7 @@
   ansible.builtin.set_fact:
     eclient_id: "{{ etime }}{{ client_id }}"
 
-- name: User openssh to create hashmac
+- name: Use openssh to create hashmac
   ansible.builtin.shell: >
      set -o pipefail && \
      echo -n "{{ eclient_id }}" | openssl sha256 -hmac "{{ client_secret }}"
