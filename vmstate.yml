@@ -1,61 +1,46 @@
 - name: Gets VM Prism Central from its description
-  set_fact:
-    vm_entitiesPC: "{{ loginpe.json|json_query('entities[?description == `NutanixPrismCentral`]')}}"
-#    vm_entities2: "{{ loginpe.json|json_query('entities[?name == `test2`]')}}"
-#    vm_entities2: "{{ loginpe.json|json_query('entities')}}"
+  ansible.builtin.set_fact:
+    vm_entitiespc: "{{ loginpe.json | json_query('entities[?description == `NutanixPrismCentral`]') }}"
 
-- name: show specific vm info on Prism Central
-  debug:
-    msg: 
-#      - "{{ vm_entitiesPC }}"
-      - "{{ vm_entitiesPC[0].name }}"
-      - "{{ vm_entitiesPC[0].description }}"
-      - "{{ vm_entitiesPC[0].uuid }}"
-      - "{{ vm_entitiesPC[0].power_state }}"
-#  tags:
-#    never
+- name: Show specific VM info on Prism Central
+  ansible.builtin.debug:
+    msg:
+      - "PC Name: {{ vm_entitiespc[0].name }}"
+      - "PC Desc: {{ vm_entitiespc[0].description }}"
+      - "PC UUID: {{ vm_entitiespc[0].uuid }}"
+      - "PC Power State: {{ vm_entitiespc[0].power_state }}"
 
 - name: Set VM Prism Central uuid fact
-  set_fact: 
-    pcuuid: "{{ vm_entitiesPC[0].uuid }}"
-  
-- name: show specific PC vm uuid 
-  debug:
-    msg: 
-      - "{{ pcuuid }}"
-      - "{{ api_url_v2 }}"
-  tags:
-    never
+  ansible.builtin.set_fact:
+    pcuuid: "{{ vm_entitiespc[0].uuid }}"
 
-- name: Set power state Prism Central to "{{ transition_payload }}"
+- name: Power state Prism Central to "{{ transition_payload }}"
   block:
     - name: Set power state Prism Central to "{{ transition_payload }}"
-      uri:
+      ansible.builtin.uri:
         url: "{{ api_url_v2 }}/{{ pcuuid }}/set_power_state"
         method: POST
         validate_certs: false
         body_format: json
         body: '{"transition": "{{ transition_payload }}"}'
         return_content: true
-        user: "{{ prism_user }}" 
+        user: "{{ prism_user }}"
         password: "{{ prism_password }}"
-        force_basic_auth: yes
+        force_basic_auth: true
         status_code: 201, 200
-      register: setpowerstate 
-      when: vm_entitiesPC[0].power_state == currentvmstate 
+      register: setpowerstate
+      when: vm_entitiespc[0].power_state == currentvmstate
 
-
-    - name: Show result of task
-      debug:
+    - name: Show ansible.builtin.debug status of task on power state
+      ansible.builtin.debug:
         msg:
           - "{{ setpowerstate }}"
           - "{{ setpowerstate.json.task_uuid }}"
       tags:
         never
 
-
-    - name: Get status of task 
-      uri:
+    - name: Get status of task to set power state and confirm power state
+      ansible.builtin.uri:
         url: "{{ api_url_v3 }}/{{ setpowerstate.json.task_uuid }}"
         method: GET
         validate_certs: false
@@ -63,18 +48,18 @@
         return_content: true
         user: "{{ prism_user }}"
         password: "{{ prism_password }}"
-        force_basic_auth: yes
+        force_basic_auth: true
         status_code: 200
       register: getpowerstate
-      when: vm_entitiesPC[0].power_state == currentvmstate 
+      when: vm_entitiespc[0].power_state == currentvmstate
       until: vmstatus in getpowerstate.json.progress_status
       retries: "{{ qretries }}"
       delay: "{{ qdelay }}"
       failed_when: getpowerstate.json.progress_status != vmstatus
 #      failed_when: getpowerstate.json.completed_tasks_info[0].progress_status != "Succeeded"
 
-    - name: Show result of task
-      debug:
+    - name: Show ansible.builtin.debug of power state task
+      ansible.builtin.debug:
         msg:
           - "{{ getpowerstate }}"
           - "{{ getpowerstate.json }}"
@@ -82,9 +67,3 @@
 #          - "{{ getpowerstate.json.completed_tasks_info[0].progress_status }}"
       tags:
         never
-
-#- name: Other VMS exist in cluster?
-#  debug:
-#    msg:
-#      - "********* VM systems exist will not hibernate **************" 
-#  when: loginpe.json.metadata.total_entities >= 2

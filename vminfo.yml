@@ -1,10 +1,10 @@
-- name: set url
-  set_fact:
+- name: Set url strings
+  ansible.builtin.set_fact:
     api_url_v2: "https://{{ query.json.cluster_service_ip }}:9440/api/nutanix/v2.0/vms"
     api_url_v3: "https://{{ query.json.cluster_service_ip }}:9440/api/nutanix/v2.0/tasks"
 
-- name: Auths to PE and get info
-  uri:
+- name: Acccess Prism Element and get information
+  ansible.builtin.uri:
     url: "{{ api_url_v2 }}"
     method: GET
     validate_certs: false
@@ -13,36 +13,34 @@
     return_content: true
     user: "{{ prism_user }}"
     password: "{{ prism_password }}"
-    force_basic_auth: yes
+    force_basic_auth: true
   register: loginpe
 
-- name: Show result
-  debug:
-    msg: 
+- name: Show ansible.builtin.debug of loginpe
+  ansible.builtin.debug:
+    msg:
       - "{{ loginpe }}"
       - "{{ api_url_v2 }}"
       - "{{ api_url_v3 }}"
   tags: never
 
-- name: Show result vms 
-  debug:
+- name: Show ansible.builtin.debug of vms status
+  ansible.builtin.debug:
     msg:
       - "{{ loginpe.json }}"
       - "{{ loginpe.json.entities }}"
       - "{{ loginpe.json.metadata.total_entities }}"
   tags: never
 
-- name: Gets VMS info 
-  set_fact:
+- name: Set VM entities
+  ansible.builtin.set_fact:
     vm_entities: "{{ loginpe.json.entities }}"
 
-- name: show specific vm info
-  debug:
-    msg: 
-     - "{{ item.name }} {{ item.uuid }}"
-#     - "{{ item.name }} {{ item.uuid }} {{ item.description }}"
-#     Does not work as PE if VM has description is null there is no description key
+- name: Show ansible.builtin.debug of specific vm info
+  ansible.builtin.debug:
+    msg:
+      - "{{ item.name }} {{ item.uuid }}"
+  #     - "{{ item.name }} {{ item.uuid }} {{ item.description }}"
+  #     Does not work as PE if VM has description is null there is no description key
   loop: "{{ vm_entities }}"
-  tags:
-    never
-
+  tags: never

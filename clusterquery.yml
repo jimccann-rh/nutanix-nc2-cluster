@@ -1,13 +1,18 @@
-- name: set epoch plus client_id
-  set_fact:
-    eclient_id: "{{ etime }}{{ CLIENT_ID }}"
+- name: Set epoch plus client_id
+  ansible.builtin.set_fact:
+    eclient_id: "{{ etime }}{{ client_id }}"
 
-- name: openssh hashmac
-  shell: 'echo -n {{ eclient_id }} | openssl sha256 -hmac {{ CLIENT_SECRET }}'
+- name: User openssh to create hashmac
+  ansible.builtin.shell: >
+     set -o pipefail && \
+     'echo -n {{ eclient_id }} | openssl sha256 -hmac {{ client_secret }}'
   register: hmac
+  args:
+    executable: /bin/bash
+  changed_when: false
 
-- name: Show result
-  debug:
+- name: Show ansible.builtin.debug
+  ansible.builtin.debug:
     msg:
       - "{{ etime }}"
       - "{{ eclient_id }}"
@@ -16,20 +21,20 @@
       - "{{ hmac.stdout.split(' ')[1] }}"
   tags: never
 
-- name: set hmac key
-  set_fact:
+- name: Set hmac key
+  ansible.builtin.set_fact:
     hmackey: "{{ hmac.stdout.split(' ')[1] }}"
 
-- name: Query the cluster and get info
-  uri:
-    url: "{{ api_url_v1 }}/clusters/{{ CLUSTER_ID }}"
+- name: Get cluster info on "{{ cluster_id }}"
+  ansible.builtin.uri:
+    url: "{{ api_url_v1 }}/clusters/{{ cluster_id }}"
     method: GET
     validate_certs: false
     body_format: json
     status_code: 200
     return_content: true
     headers:
-      "X-Frame-ClientId": "{{ CLIENT_ID }}"
+      "X-Frame-ClientId": "{{ client_id }}"
       "X-Frame-Timestamp": "{{ etime }}"
       "X-Frame-Signature": "{{ hmackey }}"
   register: query
@@ -37,17 +42,21 @@
   retries: "{{ qretries }}"
   delay: "{{ qdelay }}"
 
-- name: Show result cluster status
-  debug:
+- name: Show result of query var
+  ansible.builtin.debug:
     msg: "{{ query.json }}"
   tags:
     never
 
-- name: Show result cluster status
-  debug:
+- name: Show cluster status of "{{ cluster_id }}"
+  ansible.builtin.debug:
     msg:
-      - "{{ query.json.name }}"
-      - "{{ query.json.cluster_state }}"
-      - "{{ query.json.cluster_service_ip }}"
-#      - "{{ login.json.load_balancer_dns_name }}"
+      - "Cluster name: {{ query.json.name }}"
+      - "Cluster state: {{ query.json.cluster_state }}"
+      - "Cluster service ip: {{ query.json.cluster_service_ip }}"
 
+- name: Show load balancer status
+  ansible.builtin.debug:
+    msg: "{{ login.json.load_balancer_dns_name }}"
+  tags:
+    never

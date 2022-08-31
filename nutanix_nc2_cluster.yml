@@ -1,64 +1,53 @@
 ---
-- name: get info NC2
+- name: Configure hibernation state of NC2
   hosts: all
   gather_facts: true
   vars:
-    HIBERNATECLUSTER: false
-    DOMAIN: "api-gateway-prod.frame.nutanix.com"
+    hibernatecluster: false
+    domain: "api-gateway-prod.frame.nutanix.com"
     etime: "{{ ansible_date_time.epoch }}"
-    api_url_v1: "https://{{ DOMAIN }}/v1"
-    qretries: 120 
+    api_url_v1: "https://{{ domain }}/v1"
+    qretries: 120
     qdelay: 60
     managevm: true
-    update_prism_admin_str: 'dpp/data/nutanix/prism/central:username'
-    update_prism_password_str: 'dpp/data/nutanix/prism/central:password'
-    update_nc2_client_id_str: 'dpp/data/nutanix/nc2/{{ env }}:CLIENT_ID'
-    update_nc2_client_secret_str: 'dpp/data/nutanix/nc2/{{ env }}:CLIENT_SECRET'
-    update_nc2_cluster_id_str: 'dpp/data/nutanix/nc2/{{ env }}:CLUSTER_ID'
+    update_prism_admin_str: "dpp/data/nutanix/prism/central:username"
+    update_prism_password_str: "dpp/data/nutanix/prism/central:password"
+    update_nc2_client_id_str: "dpp/data/nutanix/nc2/{{ env }}:client_id"
+    update_nc2_client_secret_str: "dpp/data/nutanix/nc2/{{ env }}:client_secret"
+    update_nc2_cluster_id_str: "dpp/data/nutanix/nc2/{{ env }}:cluster_id"
     hv_credential_string: "auth_method=approle url={{ hvurl }} role_id={{ dpp_hcv_role_id }} secret_id={{ dpp_hcv_secret_id }}"
     hvurl: "{{ lookup('env', 'ANSIBLE_HASHI_VAULT_ADDR') }}"
     dpp_hcv_role_id: "{{ lookup('env', 'ANSIBLE_HASHI_VAULT_ROLE_ID') }}"
     dpp_hcv_secret_id: "{{ lookup('env', 'ANSIBLE_HASHI_VAULT_SECRET_ID') }}"
 
   pre_tasks:
-
-    - name: Set facts
+    - name: Set facts for account information from Hashi Vault
       ansible.builtin.set_fact:
-        prism_user: "{{ lookup('community.general.hashi_vault',  update_prism_admin_str + ' ' + hv_credential_string ) }}"
-        prism_password: "{{ lookup('community.general.hashi_vault',  update_prism_password_str + ' ' + hv_credential_string) }}"
-        CLIENT_ID: "{{ lookup('community.general.hashi_vault',  update_nc2_client_id_str + ' ' + hv_credential_string) }}"
-        CLIENT_SECRET: "{{ lookup('community.general.hashi_vault',  update_nc2_client_secret_str + ' ' + hv_credential_string) }}"
-        CLUSTER_ID: "{{ lookup('community.general.hashi_vault',  update_nc2_cluster_id_str + ' ' + hv_credential_string) }}"
+        prism_user: "{{ lookup('community.general.hashi_vault', update_prism_admin_str + ' ' + hv_credential_string) }}"
+        prism_password: "{{ lookup('community.general.hashi_vault', update_prism_password_str + ' ' + hv_credential_string) }}"
+        client_id: "{{ lookup('community.general.hashi_vault', update_nc2_client_id_str + ' ' + hv_credential_string) }}"
+        client_secret: "{{ lookup('community.general.hashi_vault', update_nc2_client_secret_str + ' ' + hv_credential_string) }}"
+        cluster_id: "{{ lookup('community.general.hashi_vault', update_nc2_cluster_id_str + ' ' + hv_credential_string) }}"
       no_log: true
       delegate_to: localhost
 
-    - name: Get cluster current state
+    - name: Get NC2 cluster current state
       include_tasks: clusterinfo.yml
 
     - name: Check that trigger file exits
-      stat:
+      ansible.builtin.stat:
         path: "{{ ansible_env.HOME }}/.hibernationoff"
       register: stat_result
 
   tasks:
-
-#    - name: set url
-#      set_fact:
-#        api_url_v2: "https://{{ login.json.cluster_service_ip }}:9440/api/nutanix/v2.0/vms"
-#        api_url_v3: "https://{{ login.json.cluster_service_ip }}:9440/api/nutanix/v2.0/tasks"
-##        api_url_v2: "https://{{ login.json.load_balancer_dns_name }}:9440/api/nutanix/v2.0/vms"
-##        api_url_v3: "https://{{ login.json.load_balancer_dns_name }}:9440/api/nutanix/v2.0/tasks"
-        
-
-    - name: Hibernate cluster
+    - name: Configure NC2 cluster for state of hibernate
       block:
-
-        - name: Query cluster is running
+        - name: Query NC2 cluster status is running
           include_tasks: clusterquery.yml
           vars:
             clusterstate: running
 
-        - name: Get vm information from cluster
+        - name: Get VM information from cluster
           include_tasks: vminfo.yml
 
         - name: Shutdown Prism Central VM
@@ -67,69 +56,67 @@
             currentvmstate: "on"
             transition_payload: "ACPI_SHUTDOWN"
             vmstatus: "Succeeded"
-          when: managevm and not loginpe.json.metadata.total_entities >= 2 
+          when: managevm and not loginpe.json.metadata.total_entities >= 2
 
-        - name: Set the cluster to hibernate
-          uri:
-            url: "{{ api_url_v1 }}/clusters/{{ CLUSTER_ID }}/hibernate"
-            method: POST 
-            validate_certs: false
-            body_format: json
-            status_code: 200
-            return_content: true
-            headers:
-              "X-Frame-ClientId": "{{ CLIENT_ID }}"
-              "X-Frame-Timestamp": "{{ etime }}"
-              "X-Frame-Signature": "{{ hmackey }}"
-          register: result
-#          ignore_errors: yes
-          when: not loginpe.json.metadata.total_entities >= 2
-
-
-        - name: Query cluster is hibernated
-          include_tasks: clusterquery.yml
-          vars:
-            clusterstate: hibernated
-          when: not loginpe.json.metadata.total_entities >= 2
-
-        - name: Removing hibernation trigger file
-          file:
-            path: "{{ ansible_env.HOME }}/.hibernationoff"
-            state: absent
-          when: not loginpe.json.metadata.total_entities >= 2
-
-        - name: Other VMS exist in cluster?
-          debug:
-            msg:
-              - "********* VM systems exist will NOT HIBERNATE **************"
-          when: loginpe.json.metadata.total_entities >= 2
-
-      when: HIBERNATECLUSTER|bool and 'running' in login.json.cluster_state
-
-
-    - name: Resume cluster
-      block:
-        - name: Set the cluster to running
-          uri:
-            url: "{{ api_url_v1 }}/clusters/{{ CLUSTER_ID }}/resume_cluster"
+        - name: Set the NC2 cluster to hibernate
+          ansible.builtin.uri:
+            url: "{{ api_url_v1 }}/clusters/{{ cluster_id }}/hibernate"
             method: POST
             validate_certs: false
             body_format: json
             status_code: 200
             return_content: true
             headers:
-              "X-Frame-ClientId": "{{ CLIENT_ID }}"
+              "X-Frame-ClientId": "{{ client_id }}"
               "X-Frame-Timestamp": "{{ etime }}"
               "X-Frame-Signature": "{{ hmackey }}"
           register: result
-#          ignore_errors: yes
+          #          ignore_errors: yes
+          when: not loginpe.json.metadata.total_entities >= 2
 
-        - name: Query cluster is running
+        - name: Query NC2 cluster is hibernated
+          include_tasks: clusterquery.yml
+          vars:
+            clusterstate: hibernated
+          when: not loginpe.json.metadata.total_entities >= 2
+
+        - name: Removing hibernation trigger file
+          ansible.builtin.file:
+            path: "{{ ansible_env.HOME }}/.hibernationoff"
+            state: absent
+          when: not loginpe.json.metadata.total_entities >= 2
+
+        - name: Do other VMS exist in cluster?
+          ansible.builtin.debug:
+            msg:
+              - "********* VM systems exist will NOT HIBERNATE **************"
+          when: loginpe.json.metadata.total_entities >= 2
+
+      when: hibernatecluster | bool and 'running' in login.json.cluster_state
+
+    - name: Configure NC2 cluster for state of running
+      block:
+        - name: Set NC2 cluster to running
+          ansible.builtin.uri:
+            url: "{{ api_url_v1 }}/clusters/{{ cluster_id }}/resume_cluster"
+            method: POST
+            validate_certs: false
+            body_format: json
+            status_code: 200
+            return_content: true
+            headers:
+              "X-Frame-ClientId": "{{ client_id }}"
+              "X-Frame-Timestamp": "{{ etime }}"
+              "X-Frame-Signature": "{{ hmackey }}"
+          register: result
+        #          ignore_errors: yes
+
+        - name: Query NC2 cluster is running
           include_tasks: clusterquery.yml
           vars:
             clusterstate: running
 
-        - name: Get vm information from cluster
+        - name: Get VM information from cluster
           include_tasks: vminfo.yml
 
         - name: Start Prism Central VM
@@ -141,8 +128,9 @@
           when: managevm
 
         - name: Creating hibernation trigger file
-          file:
+          ansible.builtin.file:
             path: "{{ ansible_env.HOME }}/.hibernationoff"
             state: touch
+            mode: 0744
 
-      when: not HIBERNATECLUSTER|bool and 'hibernated' in login.json.cluster_state
+      when: not hibernatecluster | bool and 'hibernated' in login.json.cluster_state
