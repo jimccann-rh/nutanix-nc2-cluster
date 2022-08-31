@@ -16,7 +16,7 @@
     force_basic_auth: true
   register: loginpe
 
-- name: Show ansible.builtin.debug of loginpe
+- name: Show debug of loginpe
   ansible.builtin.debug:
     msg:
       - "{{ loginpe }}"
@@ -24,7 +24,7 @@
       - "{{ api_url_v3 }}"
     verbosity: 2
 
-- name: Show ansible.builtin.debug of vms status
+- name: Show debug of vms status
   ansible.builtin.debug:
     msg:
       - "{{ loginpe.json }}"
@@ -36,7 +36,7 @@
   ansible.builtin.set_fact:
     vm_entities: "{{ loginpe.json.entities }}"
 
-- name: Show ansible.builtin.debug of specific vm info
+- name: Show debug of specific vm info
   ansible.builtin.debug:
     msg:
       - "{{ item.name }} {{ item.uuid }}"
