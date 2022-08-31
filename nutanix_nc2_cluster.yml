@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: true
   vars:
-    hibernatecluster: false
+    hibernatecluster: true
     domain: "api-gateway-prod.frame.nutanix.com"
     etime: "{{ ansible_date_time.epoch }}"
     api_url_v1: "https://{{ domain }}/v1"

@@ -25,7 +25,7 @@
   ansible.builtin.set_fact:
     hmackey: "{{ hmac.stdout.split(' ')[1] }}"
 
-- name: Get cluster info on "{{ cluster_id }}"
+- name: Get cluster status on "{{ cluster_id }}" until state is "{{ clusterstate }}"
   ansible.builtin.uri:
     url: "{{ api_url_v1 }}/clusters/{{ cluster_id }}"
     method: GET
