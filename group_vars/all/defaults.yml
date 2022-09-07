@@ -1,0 +1,12 @@
+hibernatecluster: true
+domain: "api-gateway-prod.frame.nutanix.com"
+etime: "{{ ansible_date_time.epoch }}"
+api_url_v1: "https://{{ domain }}/v1"
+qretries: 120
+qdelay: 60
+managevm: true
+update_prism_admin_str: "dpp/data/nutanix/prism/central:username"
+update_prism_password_str: "dpp/data/nutanix/prism/central:password"
+update_nc2_client_id_str: "dpp/data/nutanix/nc2/{{ env }}:client_id"
+update_nc2_client_secret_str: "dpp/data/nutanix/nc2/{{ env }}:client_secret"
+update_nc2_cluster_id_str: "dpp/data/nutanix/nc2/{{ env }}:cluster_id"
