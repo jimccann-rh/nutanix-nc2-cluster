@@ -1,2 +1,2 @@
 enable_list:
-  - fqcn-builtins  # opt-in
+  - 'fqcn-builtins'  # opt-in

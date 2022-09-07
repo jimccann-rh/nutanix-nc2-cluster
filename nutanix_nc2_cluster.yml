@@ -32,7 +32,7 @@
       delegate_to: localhost
 
     - name: Get NC2 cluster current state
-      include_tasks: clusterinfo.yml
+      ansible.builtin.include_tasks: clusterinfo.yml
 
     - name: Check that trigger file exits
       ansible.builtin.stat:
