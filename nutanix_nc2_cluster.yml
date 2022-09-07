@@ -43,15 +43,15 @@
     - name: Configure NC2 cluster for state of hibernate
       block:
         - name: Query NC2 cluster status is running
-          include_tasks: clusterquery.yml
+          ansible.builtin.include_tasks: clusterquery.yml
           vars:
             clusterstate: running
 
         - name: Get VM information from cluster
-          include_tasks: vminfo.yml
+          ansible.builtin.include_tasks: vminfo.yml
 
         - name: Shutdown Prism Central VM
-          include_tasks: vmstate.yml
+          ansible.builtin.include_tasks: vmstate.yml
           vars:
             currentvmstate: "on"
             transition_payload: "ACPI_SHUTDOWN"
@@ -75,7 +75,7 @@
           when: not loginpe.json.metadata.total_entities >= 2
 
         - name: Query NC2 cluster is hibernated
-          include_tasks: clusterquery.yml
+          ansible.builtin.include_tasks: clusterquery.yml
           vars:
             clusterstate: hibernated
           when: not loginpe.json.metadata.total_entities >= 2
@@ -112,15 +112,15 @@
         #          ignore_errors: yes
 
         - name: Query NC2 cluster is running
-          include_tasks: clusterquery.yml
+          ansible.builtin.include_tasks: clusterquery.yml
           vars:
             clusterstate: running
 
         - name: Get VM information from cluster
-          include_tasks: vminfo.yml
+          ansible.builtin.include_tasks: vminfo.yml
 
         - name: Start Prism Central VM
-          include_tasks: vmstate.yml
+          ansible.builtin.include_tasks: vmstate.yml
           vars:
             transition_payload: "on"
             currentvmstate: "off"
