@@ -11,7 +11,7 @@
         client_id: "{{ lookup('community.general.hashi_vault', update_nc2_client_id_str + ' ' + hv_credential_string) }}"
         client_secret: "{{ lookup('community.general.hashi_vault', update_nc2_client_secret_str + ' ' + hv_credential_string) }}"
         cluster_id: "{{ lookup('community.general.hashi_vault', update_nc2_cluster_id_str + ' ' + hv_credential_string) }}"
-      no_log: true
+      no_log: false
       delegate_to: localhost
 
     - name: Get NC2 cluster current state
