@@ -19,7 +19,7 @@
 
     - name: Check that trigger file exits
       ansible.builtin.stat:
-        path: "{{ ansible_env.HOME }}/.hibernationoff"
+        path: "{{ ansible_env.HOME }}/.hibernationoff-{{ update_nc2_cluster_id_str }}"
       register: stat_result
 
   tasks:
@@ -112,7 +112,7 @@
 
         - name: Creating hibernation trigger file
           ansible.builtin.file:
-            path: "{{ ansible_env.HOME }}/.hibernationoff"
+            path: "{{ ansible_env.HOME }}/.hibernationoff-{{ update_nc2_cluster_id_str }}"
             state: touch
             mode: 0744
 
