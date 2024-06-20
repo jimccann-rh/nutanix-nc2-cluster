@@ -1,7 +1,9 @@
 hibernatecluster: true
-domain: "api-gateway-prod.frame.nutanix.com"
+domain: "cloud.nutanix.com"
+#domain: "api-gateway-prod.frame.nutanix.com"
 etime: "{{ ansible_date_time.epoch }}"
-api_url_v1: "https://{{ domain }}/v1"
+api_url_v1: "https://{{ domain }}/api/v1"
+#api_url_v1: "https://{{ domain }}/v1"
 qretries: 120
 qdelay: 60
 managevm: true
